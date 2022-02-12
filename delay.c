@@ -1,4 +1,6 @@
- #include "delay.h"
+#include "delay.h"
+
+volatile uint32_t g_tim7_val = 0;
 
 void delay_ms(uint32_t ms)
 {/// delay in ms 
@@ -31,7 +33,7 @@ void delay_us(uint32_t us)
 																		// 
 	TIM12->ARR = 0x0054;												// reload value set to 1 us
 	TIM12->CR1 = 0x0084;												// ARPE On, CMS disable, Up counting
-																		// UEV disable, TIM4 enable(p392)
+																		// UEV disable, 
 
 	TIM12->EGR |= TIM_EGR_UG;											//reload all config p363
 	TIM12->CR1 |= TIM_CR1_CEN;											// start counter
@@ -43,7 +45,7 @@ void delay_us(uint32_t us)
 		us--;
 	} 
 	TIM12->CR1 &= ~TIM_CR1_CEN;											// stop counter 
-	RCC->APB1ENR &= ~RCC_APB1ENR_TIM12EN;								// disable TIM4 
+	RCC->APB1ENR &= ~RCC_APB1ENR_TIM12EN;								// disable 
 }
 
 void initSTOPWATCH(void)
@@ -111,5 +113,57 @@ uint8_t chk4TimeoutSYSTIMER(uint32_t btime, uint32_t period)
 			return (SYSTIMER_TIMEOUT);
 		else
 			return (SYSTIMER_KEEP_ALIVE);
+	}
+}
+
+void initSYSTIM(void)
+{
+	RCC->APB1ENR |= RCC_APB1ENR_TIM7EN; 								// 
+	TIM7->PSC = 0x0054-0x0001;											// 
+																		// 
+	TIM7->ARR = 0x03E8;													// 
+	TIM7->CR1 = 0x0084;													// 
+																		//
+	TIM7->CR2 = 0x0000;
+	TIM7->CNT = 0x0000;													// 
+	TIM7->EGR |= TIM_EGR_UG;											//
+	TIM7->DIER = 0x0001;												// enable 
+	
+	NVIC_SetPriority(TIM7_IRQn, 0);
+	NVIC_EnableIRQ(TIM7_IRQn);
+	TIM7->CR1 |= TIM_CR1_CEN;											// 	
+}
+
+void TIM7_IRQHandler(void)
+{
+	if(TIM7->SR & 0x0001)
+	{
+		g_tim7_val++;
+		TIM7->SR = 0x0000;
+	}
+}
+
+uint32_t getSYSTIM(void)
+{
+	return g_tim7_val;
+}
+
+uint8_t chk4TimeoutSYSTIM(uint32_t btime, uint32_t period)
+{
+	uint32_t time = g_tim7_val;
+	if(time >= btime)
+	{
+		if(time >= (btime + period))
+			return (SYSTIM_TIMEOUT);
+		else
+			return (SYSTIM_KEEP_ALIVE);
+	}
+	else
+	{
+		uint32_t utmp32 = 0xFFFFFFFF - btime;
+		if((time + utmp32) >= period)
+			return (SYSTIM_TIMEOUT);
+		else
+			return (SYSTIM_KEEP_ALIVE);
 	}
 }

@@ -10,7 +10,7 @@ SRCS = main.c
 SRCS += usart.c 
 SRCS += misc.c
 SRCS += delay.c
-SRCS += adc.c
+SRCS += dac.c
 # Normally you shouldn't need to change anything below this line!
 #######################################################################################
 GNUGCC = ../gcc-arm-none-eabi/bin

@@ -1578,6 +1578,8 @@ SystemCoreClock:
 	.ascii	"APB1RSTR\000"
 .LASF50:
 	.ascii	"AHB2ENR\000"
+.LASF2:
+	.ascii	"short int\000"
 .LASF63:
 	.ascii	"BDCR\000"
 .LASF18:
@@ -1610,8 +1612,6 @@ SystemCoreClock:
 	.ascii	"uint8_t\000"
 .LASF53:
 	.ascii	"APB1ENR\000"
-.LASF2:
-	.ascii	"short int\000"
 .LASF51:
 	.ascii	"AHB3ENR\000"
 .LASF37:
@@ -1729,12 +1729,12 @@ SystemCoreClock:
 	.ascii	"FLASH_TypeDef\000"
 .LASF33:
 	.ascii	"ITM_RxBuffer\000"
+.LASF77:
+	.ascii	"/home/emina/msut/Tastatura-klavijatura\000"
 .LASF31:
 	.ascii	"CPACR\000"
 .LASF61:
 	.ascii	"APB2LPENR\000"
 .LASF38:
 	.ascii	"OPTCR\000"
-.LASF77:
-	.ascii	"/home/emina/msut/msut_project\000"
 	.ident	"GCC: (GNU Tools for Arm Embedded Processors 7-2018-q2-update) 7.3.1 20180622 (release) [ARM/embedded-7-branch revision 261907]"

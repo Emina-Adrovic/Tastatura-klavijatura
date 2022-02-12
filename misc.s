@@ -2630,6 +2630,8 @@ getStr4NumMISC:
 	.ascii	"sige\000"
 .LASF3:
 	.ascii	"unsigned char\000"
+.LASF10:
+	.ascii	"__uint32_t\000"
 .LASF24:
 	.ascii	"f_step\000"
 .LASF11:
@@ -2649,8 +2651,8 @@ getStr4NumMISC:
 	.ascii	"d_part\000"
 .LASF6:
 	.ascii	"__uint16_t\000"
-.LASF10:
-	.ascii	"__uint32_t\000"
+.LASF38:
+	.ascii	"/home/emina/msut/Tastatura-klavijatura\000"
 .LASF21:
 	.ascii	"rstr\000"
 .LASF22:
@@ -2677,8 +2679,6 @@ getStr4NumMISC:
 	.ascii	"SystemCoreClock\000"
 .LASF20:
 	.ascii	"type\000"
-.LASF38:
-	.ascii	"/home/emina/msut/msut_project\000"
 .LASF4:
 	.ascii	"short int\000"
 .LASF15:
