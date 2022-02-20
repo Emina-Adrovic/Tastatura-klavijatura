@@ -5,12 +5,16 @@ volatile uint8_t g_usart2_buffer[USART2_BUFFER_SIZE];
 volatile uint16_t g_usart2_widx = 0;
 volatile uint16_t g_usart2_ridx = 0;
 
+volatile uint8_t g_usart3_buffer[USART3_BUFFER_SIZE];
+volatile uint16_t g_usart3_widx = 0;
+volatile uint16_t g_usart3_ridx = 0;
 
 volatile uint8_t noteTag;
 volatile uint8_t usartIRQ_state = 0; //IRQ_IDLE
 volatile uint8_t usartIRQ_timer = 0;
 
 volatile uint8_t received = 0; // 0 -- Nije primljeno 1 -- primljeno
+volatile uint8_t streamFlag = STREAM_OFF;
 
 uint8_t chkNoteTag(void) {return noteTag; }
 
@@ -148,24 +152,6 @@ void serviceUSART2(void){
 			noteTag = 0;
 			printUSART2("\x1b[37;5m Pause\033[0m ");
 			break;
-		}
-		case 0x42: //Slovo B
-		{
-			if(volumeIn >= 4){
-				break;
-			}
-			else{
-				volumeIn += 1;
-			}
-		}
-		case 0x56: //SLovo V
-		{
-			if(volumeIn <= 0){
-				break;
-			}
-			else{
-				volumeIn -= 1;
-			}
 		}
 		default:
 		{
@@ -359,6 +345,7 @@ void printUSART2(char *str, ... )
 
 void sprintUSART2(uint8_t * str)
 {
+	
 	uint16_t k = 0;
 	
 	while (str[k] != '\0')
@@ -372,3 +359,92 @@ void sprintUSART2(uint8_t * str)
             break;
     }
 }
+
+
+void initUSART3(uint32_t baudrate)
+{
+	// USART3: PD8 -> TX & PD9 -> RX
+	// PIN Config
+	RCC->AHB1ENR |= RCC_AHB1ENR_GPIODEN;
+	GPIOD->MODER &= ~((GPIO_MODER_MODER8) | (GPIO_MODER_MODER9));
+	GPIOD->MODER |= (GPIO_MODER_MODER8_1) | (GPIO_MODER_MODER9_1);
+	GPIOD->AFR[1] |= 0x00000077;
+	
+	//USART3 Config
+	RCC->APB1ENR |= RCC_APB1ENR_USART3EN;
+	USART3->BRR = baudrate;
+	USART3->CR1 = (USART_CR1_UE | USART_CR1_TE | USART_CR1_RE);	
+}
+
+void enIrqUSART3(void)
+{
+	USART3->CR1 &= ~(USART_CR1_UE);
+	
+	NVIC_EnableIRQ(USART3_IRQn);
+	USART3->CR1 |= (USART_CR1_UE)|(USART_CR1_RE)|(USART_CR1_RXNEIE);
+}
+
+void USART3_IRQHandler(void)
+{
+	if(USART3->SR & (USART_SR_RXNE))
+	{
+		g_usart3_buffer[g_usart3_widx] = USART3->DR;
+		g_usart3_widx++;
+		
+		if(g_usart3_widx >= (USART3_BUFFER_SIZE))
+		{
+			g_usart3_widx = 0;
+		}
+	}
+}
+
+void chkRxBuffUSART3(void)
+{
+	if(g_usart3_ridx != g_usart3_widx)
+	{		
+		if(g_usart3_ridx >= (USART3_BUFFER_SIZE))
+		{
+			g_usart3_ridx = 0;
+		}
+	}
+}
+
+void putcharUSART3(uint8_t data)
+{ 
+	//Print one character to USART3
+	//TC - transmition completed
+	while(!(USART3->SR & USART_SR_TC));									
+	USART3->DR = data;												    
+}
+
+
+int8_t getcharUSART3(void)
+{
+	uint8_t data;
+	USART3->CR1 |= USART_CR1_UE|USART_CR1_RE;							// enable usart	and Rx
+	while((USART3->SR & USART_SR_RXNE) != USART_SR_RXNE);				// wait until data ready
+	
+	data = USART3->DR;													// send data
+	USART3->SR &= ~(USART_SR_RXNE);										// clear Rx data ready flag
+	USART3->CR1 &= ~(USART_CR1_RE);
+	return data;
+}
+
+int8_t chkUSART3flag()
+{
+	uint8_t flag  = 0;
+	
+	if(g_usart3_ridx != g_usart3_widx)
+	{
+		flag = 1;
+		g_usart3_ridx++;
+		
+		if(g_usart3_ridx >= (USART3_BUFFER_SIZE))
+		{
+			g_usart3_ridx = 0;
+		}
+	}	
+	return flag;
+}
+
+

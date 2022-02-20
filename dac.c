@@ -6,10 +6,10 @@ void initDAC1(void)
 	// DAC1 init
 	//------------------------------------------------------------------ 
 	
-	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN; 								//
-	RCC->APB1ENR |= RCC_APB1ENR_DACEN; 								 	//	
-	GPIOA->MODER |= GPIO_MODER_MODER4;  								//
-	GPIOA->PUPDR &= ~GPIO_PUPDR_PUPDR4; 								//
+	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
+	RCC->APB1ENR |= RCC_APB1ENR_DACEN; 				
+	GPIOA->MODER |= GPIO_MODER_MODER4; 
+	GPIOA->PUPDR &= ~GPIO_PUPDR_PUPDR4; 					
 	
 	DAC->CR = (DAC_CR_TSEL1)|(DAC_CR_TEN1)|(DAC_CR_EN1);				//
 }

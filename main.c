@@ -6,37 +6,31 @@
 #include "math.h"
 
 #define DAC_BUFF_SIZE		500
-#define ADC_BUFF_SIZE		(DAC_BUFF_SIZE)
-
 #define PI 					3.14159
 
-#define IRQ_IDLE			0
-#define IRQ_DETECTED		1
-#define IRQ_WAIT4LOW		2
-#define IRQ_DEBOUNCE		3
-
-volatile uint8_t g_gpioa_irq_state = IRQ_IDLE;
+volatile uint8_t g_gpioa_irq_state;
 volatile uint32_t g_irq_timer = 0;
 
 uint16_t dac_buff[DAC_BUFF_SIZE];
-uint8_t tempTag;
-uint32_t btime;
+uint32_t btime = 0;
 
 volatile float y_out;
 
-void serviceNOTE(void);
 void getData4DacUSART2(uint16_t * dac_buff, uint8_t noteTag);
+void streamDAC(uint16_t * dac_buff);
 
 int main(void)
-{
-	
-	//uint8_t t_pbtn_cnt = g_pbtn_cnt;
-	
+{	
 	initUSART2(USART2_BAUDRATE_921600);
-	initSYSTIM();
 	enIrqUSART2();
 	
+	//initUSART3(USART2_BAUDRATE_921600);
+	//enIrqUSART3();
+	
+	initSYSTIM();
+	
 	initDmaDAC1(dac_buff, DAC_BUFF_SIZE);
+	getData4DacUSART2(dac_buff, 0);
 	
 	printUSART2("\x1b[2J");
 	printUSART2("\x1b[1;1f");
@@ -62,25 +56,31 @@ int main(void)
 		
 		//-------------PRVA VERZIJA-----------------
 		chkBuffUSART2();
+		getData4DacUSART2(dac_buff, noteTag);
 		
 		//volume[0] = 0x00;
 		//writeI2C(CS43L22_REG_PASSTHROUGH_VOLA, volume, 1);
 		//volume[0] = 0x00;
 		//writeI2C(CS43L22_REG_PASSTHROUGH_VOLB, volume, 1);
 		
-		getData4DacUSART2(dac_buff, noteTag);
-		
 		//-----------DRUGA VERZIJA-----------------
 		//if(chk4TimeoutSYSTIM(btime, 25) == SYSTIM_TIMEOUT){
-			//if(received == 1){
+			//if(received == USART2_RECEIVED){
 				//chkBuffUSART2();
 				//getData4DacUSART2(dac_buff, noteTag);
-				//received = 0;
+				//received = USART2_NOT_RECEIVED;
 			//}
-			//else if(received == 0){
+			//else if(received == USART2_NOT_RECEIVED){
 				//getData4DacUSART2(dac_buff, 0);
 			//}
 			//btime = getSYSTIM();
+		//}
+		
+		//-----------STREAM SIGNALA-----------
+		//streamFlag = chkUSART3flag();
+		//if(streamFlag == STREAM_ON)
+		//{
+			//streamDAC(dac_buff);
 		//}
 	}
 }
@@ -94,38 +94,35 @@ void getData4DacUSART2(uint16_t* dac_buff, uint8_t noteTag)
 	{
 		if(noteTag == 1)
 		{
-			//y_out = sinf(2 * PI * 20 * t); //Testni zvuk
-			y_out = sinf(2 * PI * 261.6256 * t); //c
+			y_out = sinf(2 * PI * 261.6256 * t); // C
 		}
 		else if(noteTag == 2)
 		{
-			//y_out = sinf(2 * PI * 40 * t);
-			y_out = sinf(2 * PI * 585.37 * t);//d
+			y_out = sinf(2 * PI * 293.6648 * t); // D
 		}
 		else if(noteTag == 3)
 		{
-			//y_out = sinf(2 * PI * 70 * t);
-			y_out = sinf(2 * PI * 329.6276 * t);//e
+			y_out = sinf(2 * PI * 329.6276 * t); // E
 		}
 		else if(noteTag == 4)
 		{
-			y_out = sinf(2 * PI * 349.2282 * t);//f
+			y_out = sinf(2 * PI * 349.2282 * t); // F
 		}
 		else if(noteTag == 5)
 		{
-			y_out = sinf(2 * PI * 391.9954 * t);//g
+			y_out = sinf(2 * PI * 391.9954 * t); // G
 		}
 		else if(noteTag == 6)
 		{
-			y_out = sinf(2 * PI * 440 * t);//a
+			y_out = sinf(2 * PI * 440 * t); // A
 		}
 		else if(noteTag == 7)
 		{
-			y_out = sinf(2 * PI * 493.8833 * t);//h
+			y_out = sinf(2 * PI * 493.8833 * t); // H
 		}
 		else if(noteTag == 8)
 		{
-			y_out = sinf(2 * PI * 523.2511 * t);//c
+			y_out = sinf(2 * PI * 523.2511 * t); // C
 		}
 		else if(noteTag == 0)
 		{
@@ -142,47 +139,17 @@ void getData4DacUSART2(uint16_t* dac_buff, uint8_t noteTag)
 		
 		t = t + 0.5e-4;
 	}
-	
 }
 
-
-void serviceNOTE()
+void streamDAC(uint16_t * dac_buff)
 {
-	switch(usartIRQ_state)
+	uint16_t utmp16;
+	uint32_t k = 0;
+
+	for(k=0;k<(DAC_BUFF_SIZE);k++)
 	{
-		case(IRQ_IDLE):
-		{
-			getData4DacUSART2(dac_buff, 0);
-			break;
-		}
-		case(IRQ_DETECTED):
-		{
-			tempTag = chkNoteTag();
-			getData4DacUSART2(dac_buff, tempTag);
-			usartIRQ_state = (IRQ_WAIT4LOW);
-			
-			break;
-		}
-		case(IRQ_WAIT4LOW):
-		{
-			if(tempTag != noteTag){
-				usartIRQ_state = (IRQ_DEBOUNCE);
-				usartIRQ_timer = getSYSTIM();
-			}
-			break;
-		}
-		case(IRQ_DEBOUNCE):
-		{
-			if(chk4TimeoutSYSTIM(usartIRQ_timer, 1000) == (SYSTIM_TIMEOUT))
-			{
-				usartIRQ_state = (IRQ_IDLE);
-			}
-			break;
-		}
-		default:
-		{
-			break;
-		}
+		utmp16 = dac_buff[k];
+		putcharUSART3((utmp16&0xFF00)>>8);
+		putcharUSART3(utmp16&0x00FF);
 	}
 }
-

@@ -1,7 +1,7 @@
 #include "cs43l22.h"
 
-uint8_t volume[5] = {0x00, 0xF8, 0x00, 0x07, 0x18};
-volatile uint8_t volumeIn = 2;
+uint8_t volume[5] = {0x88, 0xF8, 0x00, 0x07, 0x18};
+
 
 void initCS43L22(uint8_t volume, uint32_t sample_rate)
 {
@@ -85,9 +85,9 @@ void initCS43L22(uint8_t volume, uint32_t sample_rate)
 		writeI2C(CS43L22_REG_PCMB_VOLUME, data, 1);
 		
 		//set volume Passthrough A and Passthrough B
-		data[0] = 0xF8;
+		data[0] = 0x00;
 		writeI2C(CS43L22_REG_PASSTHROUGH_VOLA, data, 1);
-		data[0] = 0xF8;
+		data[0] = 0x00;
 		writeI2C(CS43L22_REG_PASSTHROUGH_VOLB, data, 1);
 	}
 	

@@ -16,15 +16,17 @@
 #define USART2_BAUDRATE_115200		0x0000016C
 #define USART2_BAUDRATE_9600		0x00001117
 #define USART2_BUFFER_SIZE			512
+#define USART3_BUFFER_SIZE			512
 
 #define USART2_RECEIVED			1
 #define USART2_NOT_RECEIVED		0
 
+#define STREAM_ON		1
+#define STREAM_OFF		0
+
 extern volatile uint8_t received;
 extern volatile uint8_t noteTag;
-
-extern volatile uint8_t usartIRQ_state;
-extern volatile uint8_t usartIRQ_timer;
+extern volatile uint8_t streamFlag;
 
 uint8_t chkNoteTag(void);
 
@@ -42,5 +44,13 @@ void enIrqUSART2(void);
 void USART2_IRQHandler(void);
 void serviceUSART2(void);
 void chkBuffUSART2(void);
+
+void initUSART3(uint32_t baudrate);
+void putcharUSART3(uint8_t data);
+void enIrqUSART3(void);
+void USART3_IRQHandler(void);
+void chkRxBuffUSART3(void);
+int8_t getcharUSART3(void);
+int8_t chkUSART3flag();
 
 #endif 
