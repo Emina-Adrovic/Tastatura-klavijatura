@@ -6,10 +6,10 @@ void initDAC1(void)
 	// DAC1 init
 	//------------------------------------------------------------------ 
 	
-	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN; 								//
-	RCC->APB1ENR |= RCC_APB1ENR_DACEN; 								 	//	
-	GPIOA->MODER |= GPIO_MODER_MODER4;  								//
-	GPIOA->PUPDR &= ~GPIO_PUPDR_PUPDR4; 								//
+	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
+	RCC->APB1ENR |= RCC_APB1ENR_DACEN; 				
+	GPIOA->MODER |= GPIO_MODER_MODER4; 
+	GPIOA->PUPDR &= ~GPIO_PUPDR_PUPDR4; 					
 	
 	DAC->CR = (DAC_CR_TSEL1)|(DAC_CR_TEN1)|(DAC_CR_EN1);				//
 }
@@ -37,7 +37,7 @@ void initDmaDAC1(uint16_t * dBuff, uint16_t size)
 	/// setup TIM6 for generation of request
 	///wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 	RCC->APB1ENR |= RCC_APB1ENR_TIM6EN; 								// 
-	TIM6->PSC = 0x0054 - 0x0001;										// 
+	TIM6->PSC = 42 - 0x0001;										// 
 																		// 
 	TIM6->ARR = 100;													// 
 	TIM6->CR1 = 0x0084;													// 
@@ -91,5 +91,3 @@ void initDmaDAC1(uint16_t * dBuff, uint16_t size)
 																		//
 	DMA1_Stream5->CR |= DMA_SxCR_EN;									// 
 }
-
-

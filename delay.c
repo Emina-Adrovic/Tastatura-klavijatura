@@ -167,3 +167,4 @@ uint8_t chk4TimeoutSYSTIM(uint32_t btime, uint32_t period)
 			return (SYSTIM_KEEP_ALIVE);
 	}
 }
+

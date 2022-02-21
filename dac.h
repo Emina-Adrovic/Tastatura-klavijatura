@@ -9,3 +9,4 @@ void setDAC1(uint16_t dac_data);
 void initDmaDAC1(uint16_t * dBuff, uint16_t size);
 
 #endif 
+

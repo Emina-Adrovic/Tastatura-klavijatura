@@ -1,7 +1,7 @@
-#ifndef __MISC_H_
-#define __MISC_H_
-
+#ifndef __MISC_H
+#define __MISC_H
 #include "stm32f4xx.h"
+#include "delay.h"
 
 #define MAX_PRINT_STRING_SIZE					1024
 
@@ -21,9 +21,14 @@
 
 #define PRINT_ARG_TYPE_MASK_CHAR_STRING			~((PRINT_ARG_TYPE_CHARACTER)|(PRINT_ARG_TYPE_STRING))
 
+void getDNum(uint8_t * dnum, uint32_t num);
+void putDNum(uint8_t * dnum, uint16_t * m, uint8_t * r_str);
 
 void getDNumMISC(uint8_t * dnum, uint32_t num);
 void putDNumMISC(uint8_t * dnum, uint16_t * m, uint8_t * r_str);
+
+void getASCIIString(uint8_t * str, uint32_t  * num, uint8_t * r_str);
+void catstr(uint8_t * str1, uint8_t * str2);
 void getStr4NumMISC(uint16_t type, uint32_t  * num, uint8_t * r_str);
 
 #endif 
